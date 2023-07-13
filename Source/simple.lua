@@ -13,12 +13,18 @@ function generateMaze(width, height)
 
     function canDig(x, y)
         if (x < 1 or x > width or y < 1 or y > height) then
-            return false
+            return nil
         end
 
         local cell = maze[y][x]
-        return not cell.visited
+        if (cell.visited) then
+            return nil
+        end
+        cell.visited = true
+        return cell
     end
+
+    local stack = { {1, 1, "S"} }
 
     function dig(x, y, dir)
         local cell = maze[y][x]
@@ -47,14 +53,22 @@ function generateMaze(width, height)
                 nx = nx - 1
             end
 
-            if (canDig(nx, ny)) then
+            local nextCell = canDig(nx, ny)
+            if (nextCell) then
                 cell[dir] = false
-                dig(nx, ny, dir)
+                nextCell[opposites[dir]] = false
+
+                table.insert(stack, {nx, ny, dir})
             end
         end
     end
 
-    dig(1, 1, "S")
+    while (#stack > 0) do
+        local args = table.remove(stack, #stack)
+        local x, y, dir = args[1], args[2], args[3]
+
+        dig(x, y, dir)
+    end
 
     return maze
 end
