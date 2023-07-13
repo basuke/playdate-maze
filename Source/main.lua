@@ -4,38 +4,28 @@ end
 
 import "simple"
 
-local maze = generateMaze(12, 7)
+local maze = generateMaze(24, 14)
 
 if (playdate) then
     import "update"
-    import "player"
+    import "game"
 
-    local sprite = playdate.graphics.sprite
-
-    local s = playerSprite()
-
-    sprite.setBackgroundDrawingCallback(function()
-        drawMaze(maze)
-    end)
-
-    function playdate.update()
-        sprite.update()
-    end
+    local game = game(maze)
 
     function playdate.upButtonDown()
-        s:moveUp()
+        moveTo(game, N)
     end
 
     function playdate.downButtonDown()
-        s:moveDown()
+        moveTo(game, S)
     end
 
     function playdate.leftButtonDown()
-        s:moveLeft()
+        moveTo(game, W)
     end
 
     function playdate.rightButtonDown()
-        s:moveRight()
+        moveTo(game, E)
     end
 else    
     import "cui"
