@@ -27,6 +27,16 @@ if (playdate) then
     function playdate.rightButtonDown()
         moveTo(game, E)
     end
+
+    function playdate.cranked(change)
+        local threashold = 15
+        if change > threashold then
+            redo(game)
+        elseif change < -threashold then
+            undo(game)
+        end
+    
+    end    
 else    
     import "cui"
     printMaza(maze)

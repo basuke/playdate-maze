@@ -1,5 +1,6 @@
 import "update"
 import "player"
+import "constants"
 
 local sprite = playdate.graphics.sprite
 
@@ -18,6 +19,8 @@ function game(maze)
         params = params,
         x = 1,
         y = 1,
+        undos = {},
+        redos = {},
     }
 
     sprite.setBackgroundDrawingCallback(function()
@@ -28,16 +31,36 @@ function game(maze)
         sprite.update()
     end
 
-    player:moveTo(playerPosition(game))
+    player:moveTo(_playerCoordinate(game))
     return game
 end
 
-function playerPosition(game)
+function _playerCoordinate(game)
     local size = game.params.size
     local shiftH = game.params.marginH + size / 2
     local shiftV = game.params.marginV + size / 2
 
     return (game.x - 1) * size + shiftH, (game.y - 1) * size + shiftV
+end
+
+function _newPosition(x, y, dir)
+    if (dir == N) then
+        y = y - 1
+    elseif (dir == E) then
+        x = x + 1
+    elseif (dir == S) then
+        y = y + 1
+    elseif (dir == W) then
+        x = x - 1
+    end
+
+    return x, y
+end
+
+function _movePlayerTo(game, x, y)
+    game.x = x
+    game.y = y
+    game.player:moveTo(_playerCoordinate(game))
 end
 
 function moveTo(game, dir)
@@ -51,23 +74,40 @@ function moveTo(game, dir)
         return false
     end
 
-    if (dir == N) then
-        y = y - 1
-    elseif (dir == E) then
-        x = x + 1
-    elseif (dir == S) then
-        y = y + 1
-    elseif (dir == W) then
-        x = x - 1
-    end
-
+    x, y = _newPosition(x, y, dir)
     if y < 1 or y > height or x < 1 or x > width then
         return false
     end
 
-    game.x = x
-    game.y = y
-    player:moveTo(playerPosition(game))
+    _movePlayerTo(game, x, y)
+    table.insert(game.undos, dir)
+    game.redos = {}
+
+    return true
+end
+
+function undo(game)
+    if (#game.undos == 0) then
+        return false
+    end
+
+    local move = table.remove(game.undos, #game.undos)
+    table.insert(game.redos, move)
+    local x, y = _newPosition(game.x, game.y, opposites[move])
+    _movePlayerTo(game, x, y)
+
+    return true
+end
+
+function redo(game)
+    if (#game.redos == 0) then
+        return false
+    end
+
+    local move = table.remove(game.redos, #game.redos)
+    table.insert(game.undos, move)
+    local x, y = _newPosition(game.x, game.y, move)
+    _movePlayerTo(game, x, y)
 
     return true
 end

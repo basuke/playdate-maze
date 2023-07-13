@@ -1,7 +1,7 @@
+import "constants"
+
 function generateMaze(width, height)
     local maze = {}
-
-    local opposites = { N = "S", E = "W", S = "N", W = "E" }
 
     for i = 1, height do
         maze[i] = {}
