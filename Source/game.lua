@@ -2,7 +2,8 @@ import "update"
 import "player"
 import "constants"
 
-local sprite = playdate.graphics.sprite
+local gfx = playdate.graphics
+local sprite = gfx.sprite
 
 N = "N"
 E = "E"
@@ -10,7 +11,7 @@ S = "S"
 W = "W"
 
 function game(maze)
-    local params = dimentionParams(maze)
+    local params = dimentionParams(#maze[1], #maze)
     local player = playerSprite()
 
     local game = {
@@ -19,13 +20,20 @@ function game(maze)
         params = params,
         x = 1,
         y = 1,
+        offsetX = 0,
+        offsetY = 0,
         undos = {},
         redos = {},
         targets = {},
     }
 
-    sprite.setBackgroundDrawingCallback(function()
-        drawMaze(maze)
+    gfx.setDrawOffset(0, 0)
+
+    sprite.setBackgroundDrawingCallback(function(x, y, width, height)
+        local ox, oy = game.offsetX, game.offsetY
+        x -= ox
+        y -= oy
+        drawMaze(maze, params, ox, oy, x, y, x + width, y +height)
     end)
 
     function playdate.update()
@@ -69,11 +77,44 @@ function idle(game)
         dy = -dp
     end
 
+    _newOffset(game)
+
+    gfx.setDrawOffset(game.offsetX, game.offsetY)
     player:moveBy(dx, dy)
+    sprite.redrawBackground()
+end
+
+function _newOffset(game)
+    local ox, oy = game.offsetX, game.offsetY
+    local player, params = game.player, game.params
+    local x, y = player.x, player.y
+    -- local vx, vy = params.visibleSize()
+    -- local fx, fy = params.freeSize()
+
+    -- vx, vy = vx + ox, vy + oy
+    -- fx, fy = fx + ox, fy + oy
+
+    function calc(oy, y, size, limit, margin)
+        if (y > 100) then
+            oy = -(y - 100)
+        end
+
+        if (oy > 0) then
+            oy = 0
+        end
+
+        if (oy < 0) then
+            oy = 0
+        end
+
+        return oy
+    end
+
+    game.offsetX, game.offsetY = ox, oy
 end
 
 function _playerCoordinate(game)
-    local size = game.params.size
+    local size = game.params.cellSize
     local shiftH = game.params.marginH + size / 2
     local shiftV = game.params.marginV + size / 2
 

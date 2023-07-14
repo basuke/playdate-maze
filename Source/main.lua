@@ -4,7 +4,7 @@ end
 
 import "simple"
 
-local maze = generateMaze(24, 14)
+local maze = generateMaze(36, 36)
 
 if (playdate) then
     import "update"
