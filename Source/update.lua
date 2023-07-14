@@ -1,3 +1,5 @@
+import "maze"
+
 local gfx = playdate.graphics
 
 function drawMaze(maze, params, ox, oy, left, top, right, bottom)
@@ -21,27 +23,29 @@ function drawMaze(maze, params, ox, oy, left, top, right, bottom)
         gfx.drawLine(x0 - ox, y0 - oy, x1 - ox, y1 - oy)
     end
 
-    for y = 1, #maze do
-        local cells = maze[y]
+    local mx, my = mazeSize(maze)
+    local n, e, s, w
+
+    for y = 1, my do
         local y0 = (y - 1) * cellSize + params.marginV
         local y1 = y0 + cellSize
 
-        for x = 1, #cells do
-            local cell = cells[x]
+        for x = 1, mx do
             local x0 = (x - 1) * cellSize + params.marginH
             local x1 = x0 + cellSize
 
-            if (cell.N) then
+            n, e, s, w = getWalls(maze, x, y)
+            if (n) then
                 drawLine(x0, y0, x1, y0)
             end
-            if (cell.E) then
+            if (w) then
+                drawLine(x0, y0, x0, y1)
+            end
+            if (x == mx and e) then
                 drawLine(x1, y0, x1, y1)
             end
-            if (cell.S) then
+            if (y == my and s) then
                 drawLine(x0, y1, x1, y1)
-            end
-            if (cell.W) then
-                drawLine(x0, y0, x0, y1)
             end
         end
     end

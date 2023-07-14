@@ -111,13 +111,11 @@ function _movePlayerTo(game, x, y)
 end
 
 function moveTo(game, dir)
-    local maze = game.maze
     local width, height = game.params.size()
     local player = game.player
     local x, y = game.x, game.y
 
-    local cell = maze[y][x]
-    if (cell[dir]) then
+    if (not canMove(game.maze, x, y, dir)) then
         return false
     end
 

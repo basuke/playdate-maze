@@ -1,4 +1,5 @@
 import "constants"
+import "utils"
 
 function generateMaze(width, height)
     local maze = {}
@@ -73,10 +74,16 @@ function generateMaze(width, height)
     return maze
 end
 
-function shuffle(tbl)
-    for i = #tbl, 2, -1 do
-        local j = math.random(i)
-        tbl[i], tbl[j] = tbl[j], tbl[i]
-    end
-    return tbl
+function mazeSize(maze)
+    return #maze[1], #maze
+end
+
+function canMove(maze, x, y, dir)
+    local cell = maze[y][x]
+    return not cell[dir]
+end
+
+function getWalls(maze, x, y)
+    local cell = maze[y][x]
+    return cell.N, cell.E, cell.S, cell.W
 end
