@@ -43,42 +43,40 @@ function game(maze)
 end
 
 function idle(game)
-    if (#game.targets == 0) then
-        return
-    end
+    if (#game.targets > 0) then
+        local player = game.player
+        local x, y = player:getPosition()
 
-    local player = game.player
-    local x, y = player:getPosition()
-
-    local target = game.targets[1]
-    local tx, ty = target[1], target[2]
-    local dx, dy = tx - x, ty - y
-
-    if (dx == 0 and dy == 0) then
-        table.remove(game.targets, 1)
-        return
-    end
-
-    local speed = 100 -- pixels per second
-    local dp = speed / playdate.getFPS()
-
-    if (dx > 0 and dx > dp) then
-        dx = dp
-    elseif (dx < 0 and dx < -dp) then
-        dx = -dp
-    end
-
-    if (dy > 0 and dy > dp) then
-        dy = dp
-    elseif (dy < 0 and dy < -dp) then
-        dy = -dp
+        local target = game.targets[1]
+        local tx, ty = target[1], target[2]
+        local dx, dy = tx - x, ty - y
+    
+        if (dx == 0 and dy == 0) then
+            table.remove(game.targets, 1)
+            return
+        end
+    
+        local speed = 100 -- pixels per second
+        local dp = speed / playdate.getFPS()
+    
+        if (dx > 0 and dx > dp) then
+            dx = dp
+        elseif (dx < 0 and dx < -dp) then
+            dx = -dp
+        end
+    
+        if (dy > 0 and dy > dp) then
+            dy = dp
+        elseif (dy < 0 and dy < -dp) then
+            dy = -dp
+        end
+        player:moveBy(dx, dy)
     end
 
     _newOffset(game)
 
     gfx.setDrawOffset(-game.offsetX, -game.offsetY)
     sprite.redrawBackground()
-    player:moveBy(dx, dy)
 end
 
 function _newOffset(game)
@@ -106,8 +104,7 @@ function _movePlayerTo(game, x, y)
     game.x = x
     game.y = y
 
-    x, y = game.params.playerPosition(x, y)
-    table.insert(game.targets, { x, y })
+    table.insert(game.targets, { game.params.playerPosition(x, y) })
     idle(game)
 end
 
