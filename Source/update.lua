@@ -11,14 +11,14 @@ function drawMaze(maze, params, ox, oy, left, top, right, bottom)
 
     gfx.clear(gfx.kColorWhite)
     gfx.setColor(gfx.kColorBlack)
-    gfx.setLineWidth(params.wallThickness)
+    gfx.setLineWidth(thicknes)
     gfx.setLineCapStyle(gfx.kLineCapStyleRound)
 
     function drawLine(x0, y0, x1, y1)
         if (x1 < left or x0 > right or y1 < top or y0 > bottom) then
             return
         end
-        gfx.drawLine(ox + x0, oy + y0, ox + x1, oy + y1)
+        gfx.drawLine(x0 - ox, y0 - oy, x1 - ox, y1 - oy)
     end
 
     for y = 1, #maze do

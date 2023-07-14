@@ -20,18 +20,29 @@ function dimension(width, height)
     local vx, vy = mx + marginH * 2, my + marginV * 2
     local fx, fy = sx - clearance * cellSize, sy - clearance * cellSize
 
-    return {
+    d = {
         size = function() return width, height end,
-        width = width,
-        height = height,
         cellSize = cellSize,
         wallThickness = 5,
         marginH = marginH,
         marginV = marginV,
-        mazeSize = function() return width, height end,
         screenSize = function() return sx, sy end,
-        viewRect = function(ox, oy) return vx, vy end,
-        freeSize = function () return fx, fy end,
+        viewSize = function() return vx, vy end,
+
+        minOffset = function() return 0, 0 end,
+        maxOffset = function() return (vx - sx), (vy - sy) end,
+
+        capOffset = function(ox, oy)
+            local minx, miny = d.minOffset()
+            local maxx, maxy = d.maxOffset()
+            return math.min(maxx, math.max(minx, ox)), math.min(maxy, math.max(miny, oy))
+        end,
+
+        offset = function(x, y)
+            x = x - sx / 2
+            y = y - sy / 2
+            return d.capOffset(x, y)
+        end,
 
         playerPosition = function(x, y)
             local shiftH = marginH + cellSize / 2
@@ -40,4 +51,5 @@ function dimension(width, height)
             return (x - 1) * cellSize + shiftH, (y - 1) * cellSize + shiftV
         end        
     }
+    return d
 end

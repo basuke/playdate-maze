@@ -27,8 +27,8 @@ function game(maze)
 
     sprite.setBackgroundDrawingCallback(function(x, y, width, height)
         local ox, oy = game.offsetX, game.offsetY
-        x -= ox
-        y -= oy
+        x += ox
+        y += oy
         drawMaze(maze, params, ox, oy, x, y, x + width, y +height)
     end)
 
@@ -76,37 +76,15 @@ function idle(game)
 
     _newOffset(game)
 
-    gfx.setDrawOffset(game.offsetX, game.offsetY)
-    player:moveBy(dx, dy)
+    gfx.setDrawOffset(-game.offsetX, -game.offsetY)
     sprite.redrawBackground()
+    player:moveBy(dx, dy)
 end
 
 function _newOffset(game)
-    local ox, oy = game.offsetX, game.offsetY
     local player, params = game.player, game.params
     local x, y = player.x, player.y
-    -- local vx, vy = params.visibleSize()
-    -- local fx, fy = params.freeSize()
-
-    -- vx, vy = vx + ox, vy + oy
-    -- fx, fy = fx + ox, fy + oy
-
-    function calc(oy, y, size, limit, margin)
-        if (y > 100) then
-            oy = -(y - 100)
-        end
-
-        if (oy > 0) then
-            oy = 0
-        end
-
-        if (oy < 0) then
-            oy = 0
-        end
-
-        return oy
-    end
-
+    local ox, oy = params.offset(x, y)
     game.offsetX, game.offsetY = ox, oy
 end
 
@@ -135,7 +113,7 @@ end
 
 function moveTo(game, dir)
     local maze = game.maze
-    local width, height = #maze[1], #maze
+    local width, height = game.params.size()
     local player = game.player
     local x, y = game.x, game.y
 
