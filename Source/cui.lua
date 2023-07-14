@@ -1,3 +1,7 @@
+import = require
+
+require "maze"
+
 function printMaza(maze)
     function printLine(cells, dir)
         local line = ""
@@ -38,3 +42,6 @@ function printMaza(maze)
         end
     end
 end
+
+local maze = generateMaze(20, 20)
+printMaza(maze)

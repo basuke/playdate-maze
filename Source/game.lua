@@ -2,11 +2,13 @@ import "update"
 import "player"
 import "constants"
 import "dimension"
+import "maze"
 
 local gfx = playdate.graphics
 local sprite = gfx.sprite
 
-function game(maze)
+function game()
+    local maze = generateMaze(36, 36)
     local params = dimension(#maze[1], #maze)
     local player = playerSprite()
 
