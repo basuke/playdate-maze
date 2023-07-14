@@ -1,17 +1,13 @@
 import "update"
 import "player"
 import "constants"
+import "dimension"
 
 local gfx = playdate.graphics
 local sprite = gfx.sprite
 
-N = "N"
-E = "E"
-S = "S"
-W = "W"
-
 function game(maze)
-    local params = dimentionParams(#maze[1], #maze)
+    local params = dimension(#maze[1], #maze)
     local player = playerSprite()
 
     local game = {
@@ -41,7 +37,8 @@ function game(maze)
         sprite.update()
     end
 
-    player:moveTo(_playerCoordinate(game))
+    player:moveTo(params.playerPosition(1, 1))
+
     return game
 end
 
@@ -54,7 +51,7 @@ function idle(game)
     local x, y = player:getPosition()
 
     local target = game.targets[1]
-    local tx, ty = target.x, target.y
+    local tx, ty = target[1], target[2]
     local dx, dy = tx - x, ty - y
 
     if (dx == 0 and dy == 0) then
@@ -113,14 +110,6 @@ function _newOffset(game)
     game.offsetX, game.offsetY = ox, oy
 end
 
-function _playerCoordinate(game)
-    local size = game.params.cellSize
-    local shiftH = game.params.marginH + size / 2
-    local shiftV = game.params.marginV + size / 2
-
-    return (game.x - 1) * size + shiftH, (game.y - 1) * size + shiftV
-end
-
 function _newLocation(x, y, dir)
     if (dir == N) then
         y = y - 1
@@ -139,8 +128,8 @@ function _movePlayerTo(game, x, y)
     game.x = x
     game.y = y
 
-    x, y = _playerCoordinate(game)
-    table.insert(game.targets, { x = x, y = y })
+    x, y = game.params.playerPosition(x, y)
+    table.insert(game.targets, { x, y })
     idle(game)
 end
 
