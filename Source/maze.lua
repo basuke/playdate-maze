@@ -130,10 +130,12 @@ function generateMaze(width, height)
         grids[index + deltas[dir]] = false
     end
 
-    grids[2] = false
     local x, y = 1, 1
     local index = _index(gx, x, y)
-    while (index) do
+    breakWall(x, y, index, N)
+    dig(x, y, index)
+
+    while (count) do
         dig(x, y, index)
 
         while (count > 0) do
@@ -152,6 +154,8 @@ function generateMaze(width, height)
         end
 
         if (count < 1) then
+            index = _index(gx, width, height)
+            breakWall(width, height, index, S)
             break
         end
 

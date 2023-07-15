@@ -58,7 +58,7 @@ function idle(game)
             return
         end
     
-        local speed = 100 -- pixels per second
+        local speed = 160 -- pixels per second
         local dp = speed / playdate.getFPS()
     
         if (dx > 0 and dx > dp) then
@@ -73,6 +73,17 @@ function idle(game)
             dy = -dp
         end
         player:moveBy(dx, dy)
+    else
+        local buttonStates = playdate.getButtonState()
+        if (buttonStates & playdate.kButtonUp ~= 0) then
+            moveTo(game, N)
+        elseif (buttonStates & playdate.kButtonDown ~= 0) then
+            moveTo(game, S)
+        elseif (buttonStates & playdate.kButtonLeft ~= 0) then
+            moveTo(game, W)
+        elseif (buttonStates & playdate.kButtonRight ~= 0) then
+            moveTo(game, E)
+        end
     end
 
     _newOffset(game)
