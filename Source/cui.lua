@@ -41,5 +41,15 @@ function printMaza(maze)
     print(hline(my, "S"))
 end
 
-local maze = generateMaze(20, 20)
+local maze = generateMaze(24, 24)
 printMaza(maze)
+
+-- local index = 1
+-- for i = 1, maze.gy do
+--     local line = ""
+--     for j = 1, maze.gy do
+--         line = line .. (maze.grids[index] and "1" or ".")
+--         index = index + 1
+--     end
+--     print(line)
+-- end

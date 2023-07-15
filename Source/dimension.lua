@@ -1,5 +1,8 @@
-function dimension(width, height)
-    local cellSize = 16
+import "maze"
+
+function dimension(maze)
+    local width, height = mazeSize(maze)
+    local cellSize = 24
     local minMargin = 8
     local clearance = 3 -- how many cells to keep visible around the edges
 

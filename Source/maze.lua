@@ -4,86 +4,198 @@ import "utils"
 function generateMaze(width, height)
     local maze = {}
 
-    for i = 1, height do
-        maze[i] = {}
-        for j = 1, width do
-            maze[i][j] = { N = true, E = true, S = true, W = true, visited = false }
-        end
+    local grids = {}
+    local gx, gy = width * 2 + 1, height * 2 + 1
+    local gridSize = gx * gy
 
+    for i = 1, gridSize do
+        grids[i] = true
     end
 
-    function canDig(x, y)
+    local function canDig(x, y, index, dir)
+        if (x < 1 or x > width or y < 1 or y > height) then
+            return false
+        end
+        if (grids[index]) then
+            return false
+        end
+        return true
+    end
+
+    local deltas = { N = -gx, E = 1, S = gx, W = -1 }
+    local deltasX = { N = 0, E = 1, S = 0, W = -1 }
+    local deltasY = { N = -1, E = 0, S = 1, W = 0 }
+
+    local function canConnect(x, y, index, dir)
+        -- check the cell is already digged yet the wall exists between cells
+        x = x + deltasX[dir]
+        y = y + deltasY[dir]
         if (x < 1 or x > width or y < 1 or y > height) then
             return nil
         end
 
-        local cell = maze[y][x]
-        if (cell.visited) then
+        local delta = deltas[dir]
+        return grids[index + delta] and not grids[index + delta * 2]
+    end
+
+    local function connectableWalls(x, y, index)
+        -- returns wall directions where cells can be connected through
+        local walls = {}
+
+        if (canConnect(x, y, index, N)) then
+            table.insert(walls, N)
+        end
+        if (canConnect(x, y, index, W)) then
+            table.insert(walls, W)
+        end
+        if (canConnect(x, y, index, S)) then
+            table.insert(walls, S)
+        end
+        if (canConnect(x, y, index, E)) then
+            table.insert(walls, E)
+        end
+        return walls
+    end
+
+    local function connectableWall(x, y, index)
+        -- returns wall directions where cells can be connected through
+        local walls = connectableWalls(x, y, index)
+        return randomPick(walls)
+    end
+
+    local function canDig(x, y, index, dir)
+        -- check the cell is not digged
+        x = x + deltasX[dir]
+        y = y + deltasY[dir]
+        if (x < 1 or x > width or y < 1 or y > height) then
             return nil
         end
-        cell.visited = true
-        return cell
+
+        return grids[index + deltas[dir] * 2]
     end
 
-    local stack = { {1, 1, "S"} }
+    local function diggableWalls(x, y, index)
+        -- returns directions where we can dig
+        local walls = {}
 
-    function dig(x, y, dir)
-        local cell = maze[y][x]
-        cell.visited = true
-        cell[opposites[dir]] = false
-
-        if (x == width and y == height) then
-            cell.S = false
-            return
+        if (canDig(x, y, index, N)) then
+            table.insert(walls, N)
         end
+        if (canDig(x, y, index, W)) then
+            table.insert(walls, W)
+        end
+        if (canDig(x, y, index, S)) then
+            table.insert(walls, S)
+        end
+        if (canDig(x, y, index, E)) then
+            table.insert(walls, E)
+        end
+        return walls
+    end
 
-        local dirs = shuffle({ "N", "E", "S", "W" })
+    local function diggableWall(x, y, index)
+        -- returns random direction where we can dig
+        local walls = diggableWalls(x, y, index)
+        return randomPick(walls)
+    end
 
-        for i = 1, #dirs do
-            local dir = dirs[i]
-            local nx = x
-            local ny = y
+    local function randomDirection()
+        return randomPick(directions)
+    end
 
-            if (dir == "N") then
-                ny = ny - 1
-            elseif (dir == "E") then
-                nx = nx + 1
-            elseif (dir == "S") then
-                ny = ny + 1
-            elseif (dir == "W") then
-                nx = nx - 1
+    local function pickUndiggedConnectable()
+        while (true) do
+            local x = math.random(width)
+            local y = math.random(height)
+            local index = _index(gx, x, y)
+            if (grids[index]) then
+                local dir = connectableWall(x, y, index)
+                if (dir) then
+                    return x, y, index, dir
+                end
+            end
+        end
+    end
+
+    local count = width * height
+
+    function dig(x, y, index)
+        print("digging", x, y)
+        grids[index] = false
+        count = count - 1
+    end
+
+    function breakWall(x, y, index, dir)
+        print("breaking wall", x, y, dir)
+        grids[index + deltas[dir]] = false
+    end
+
+    grids[2] = false
+    local x, y = 1, 1
+    local index = _index(gx, x, y)
+    while (index) do
+        dig(x, y, index)
+
+        while (count > 0) do
+            local dir = diggableWall(x, y, index)
+            if (not dir) then
+                print("end dig")
+                break
             end
 
-            local nextCell = canDig(nx, ny)
-            if (nextCell) then
-                cell[dir] = false
-                nextCell[opposites[dir]] = false
+            breakWall(x, y, index, dir)
 
-                table.insert(stack, {nx, ny, dir})
-            end
+            index = index + deltas[dir] * 2
+            x = x + deltasX[dir]
+            y = y + deltasY[dir]
+            dig(x, y, index)
         end
+
+        if (count < 1) then
+            break
+        end
+
+        x, y, index, dir = pickUndiggedConnectable()
+        breakWall(x, y, index, dir)
     end
 
-    while (#stack > 0) do
-        local args = table.remove(stack, #stack)
-        local x, y, dir = args[1], args[2], args[3]
-
-        dig(x, y, dir)
-    end
-
-    return maze
+    return {
+        width = width,
+        height = height,
+        grids = grids,
+        gx = gx,
+        gy = gy,
+    }
 end
 
 function mazeSize(maze)
-    return #maze[1], #maze
+    return maze.width, maze.height
 end
 
 function canMove(maze, x, y, dir)
-    local cell = maze[y][x]
-    return not cell[dir]
+    return not getWall(maze, x, y, dir)
 end
 
 function getWalls(maze, x, y)
-    local cell = maze[y][x]
-    return cell.N, cell.E, cell.S, cell.W
+    local grids = maze.grids
+    local index = _index(maze.gx, x, y)
+    return grids[index - maze.gx], grids[index + 1], grids[index + maze.gx], grids[index - 1]
+end
+
+function getWall(maze, x, y, dir)
+    local index = _index(maze.gx, x, y)
+    if (dir == N) then
+        index = index - maze.gx
+    elseif (dir == E) then
+        index = index + 1
+    elseif (dir == S) then
+        index = index + maze.gx
+    elseif (dir == W) then
+        index = index - 1
+    end
+    return maze.grids[index]
+end
+
+function _index(gx, x, y)
+    return (y * 2 - 1) * gx + x * 2
 end

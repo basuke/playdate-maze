@@ -8,8 +8,8 @@ local gfx = playdate.graphics
 local sprite = gfx.sprite
 
 function game()
-    local maze = generateMaze(36, 36)
-    local params = dimension(#maze[1], #maze)
+    local maze = generateMaze(28, 28)
+    local params = dimension(maze)
     local player = playerSprite()
 
     local game = {

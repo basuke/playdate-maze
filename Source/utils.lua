@@ -5,3 +5,8 @@ function shuffle(tbl)
     end
     return tbl
 end
+
+function randomPick(tbl)
+    local i = math.random(#tbl)
+    return tbl[i]
+end
